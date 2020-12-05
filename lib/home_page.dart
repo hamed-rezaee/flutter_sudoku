@@ -33,7 +33,12 @@ class _HomePageState extends State<HomePage> {
                                 color: selectedRow == row &&
                                         selectedColumn == column
                                     ? Colors.green
-                                    : Colors.purple[800],
+                                    : selectedRow == row ||
+                                            selectedColumn == column ||
+                                            isInSameBox(selectedRow,
+                                                selectedColumn, row, column)
+                                        ? Colors.purple[400]
+                                        : Colors.purple[800],
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Center(
@@ -42,7 +47,11 @@ class _HomePageState extends State<HomePage> {
                                   style: TextStyle(
                                     color:
                                         isValid(grid[row][column], row, column)
-                                            ? Colors.white
+                                            ? grid[row][column] ==
+                                                    grid[selectedRow]
+                                                        [selectedColumn]
+                                                ? Colors.amber
+                                                : Colors.white
                                             : Colors.red,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18,
@@ -153,6 +162,21 @@ class _HomePageState extends State<HomePage> {
     }
 
     return count < 2;
+  }
+
+  bool isInSameBox(int selectedRow, int selectedColumn, int row, int column) {
+    final int baseRow = (selectedRow ~/ 3) * 3;
+    final int baseColumn = (selectedColumn ~/ 3) * 3;
+
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        if (baseRow + i == row && baseColumn + j == column) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   bool hasEmpty() {
