@@ -9,7 +9,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         title: 'Flutter Sudoku',
         theme: ThemeData(
-          primarySwatch: Colors.purple,
+          primarySwatch: Colors.grey,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: const HomePage(),

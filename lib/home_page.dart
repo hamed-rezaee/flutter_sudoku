@@ -10,10 +10,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) => Scaffold(
+        backgroundColor: Colors.black12,
         appBar: AppBar(
-          title: const Text('Flutter Sudoku'),
+          title: const Text(
+            'Flutter Sudoku',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.black54,
         ),
         body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Column(
               children: <Widget>[
@@ -30,15 +36,13 @@ class _HomePageState extends State<HomePage> {
                               width: MediaQuery.of(context).size.width / 10,
                               height: MediaQuery.of(context).size.width / 10,
                               decoration: BoxDecoration(
-                                color: selectedRow == row &&
-                                        selectedColumn == column
+                                color: isSelectedCell(row, column)
                                     ? Colors.green
-                                    : selectedRow == row ||
-                                            selectedColumn == column ||
-                                            isInSameBox(selectedRow,
-                                                selectedColumn, row, column)
-                                        ? Colors.purple[400]
-                                        : Colors.purple[800],
+                                    : isInSameRowColumnOrBox(row, column)
+                                        ? Colors.grey
+                                        : hasSameValue(row, column)
+                                            ? Colors.grey[700]
+                                            : Colors.white,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Center(
@@ -47,11 +51,9 @@ class _HomePageState extends State<HomePage> {
                                   style: TextStyle(
                                     color:
                                         isValid(grid[row][column], row, column)
-                                            ? grid[row][column] ==
-                                                    grid[selectedRow]
-                                                        [selectedColumn]
-                                                ? Colors.amber
-                                                : Colors.white
+                                            ? hasSameValue(row, column)
+                                                ? Colors.white
+                                                : Colors.black
                                             : Colors.red,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18,
@@ -73,40 +75,64 @@ class _HomePageState extends State<HomePage> {
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                height: 150,
-                width: 150,
-                child: GridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 4,
-                  mainAxisSpacing: 4,
-                  children: List<Widget>.generate(
-                    9,
-                    (int index) => RaisedButton(
-                      color: Colors.amber,
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
+              child: Row(
+                children: <Widget>[
+                  SizedBox(
+                    height: 150,
+                    width: 150,
+                    child: GridView.count(
+                      shrinkWrap: true,
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 4,
+                      mainAxisSpacing: 4,
+                      children: List<Widget>.generate(
+                        9,
+                        (int index) => GestureDetector(
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(4)),
+                            child: Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                          onTap: () {
+                            if (selectedRow != null && selectedColumn != null) {
+                              grid[selectedRow][selectedColumn] = index + 1;
+                              setState(() {});
+                            }
+                          },
                         ),
                       ),
-                      onPressed: () {
-                        if (selectedRow != -1 && selectedColumn != -1) {
-                          grid[selectedRow][selectedColumn] = index + 1;
-                          setState(() {});
-                        }
-                      },
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
         ),
       );
+
+  bool hasSameValue(int row, int column) =>
+      selectedRow != null &&
+      selectedColumn != null &&
+      grid[row][column] != 0 &&
+      grid[row][column] == grid[selectedRow][selectedColumn];
+
+  bool isInSameRowColumnOrBox(int row, int column) =>
+      selectedRow == row || selectedColumn == column;
+  // ||
+  // isInSameBox(selectedRow, selectedColumn, row, column);
+
+  bool isSelectedCell(int row, int column) =>
+      selectedRow == row && selectedColumn == column;
 
   List<List<int>> grid = <List<int>>[
     <int>[5, 3, 0, 0, 7, 0, 0, 0, 0],
@@ -120,8 +146,8 @@ class _HomePageState extends State<HomePage> {
     <int>[0, 0, 0, 0, 8, 0, 0, 7, 9],
   ];
 
-  int selectedRow = -1;
-  int selectedColumn = -1;
+  int selectedRow;
+  int selectedColumn;
 
   bool validate(int value, List<int> numbers) {
     int count = 0;
@@ -165,6 +191,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   bool isInSameBox(int selectedRow, int selectedColumn, int row, int column) {
+    if (selectedRow == null || selectedColumn == null) {
+      return false;
+    }
+
     final int baseRow = (selectedRow ~/ 3) * 3;
     final int baseColumn = (selectedColumn ~/ 3) * 3;
 
